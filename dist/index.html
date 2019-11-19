@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+      * { margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; }
+      html, body { }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      div[data-name] {
+        padding: 5px;
+      }
+      div[data-name]::before {
+        content: attr(data-name);
+        padding: 5px;
+      }
+      #aws { display: none; }
+      #aws,
+      #loading {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      .background {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #000000CC;
+      }
+      #loading .modal {
+        position: absolute;
+        font-weight: bold;
+        color: #FFF;
+        padding: 30px;
+      }
+      #aws .modal {
+        background: #FFF;
+        width: 40vw;
+        height: auto;
+        position: absolute;
+        left: calc(50% - 20vw);
+        top: calc(40%);
+        padding: 5px;
+        box-sizing: content-box;
+      }
+      #aws .modal div {
+        padding: 5px;
+      }
+      #aws .modal button {
+        padding: 5px;
+        float: right;
+      }
+      #logout {
+        float: right;
+        padding: 10px;
+        display: none;
+      }
+      #images { text-align: center; }
+      #images img { display: block; margin: 0 auto; }
+    </style>
+  </head>
+  <body>
+    <button id="logout">Logout</button>
+    <div id="aws">
+      <div class="background"></div>
+      <div class="modal">
+        <div>
+          <label>Access ID</label>
+          <input id="accessKeyId" />
+        </div>
+        <div>
+          <label>Secret</label>
+          <input id="secretAccessKey" />
+        </div>
+        <button>Enter</button>
+      </div>
+    </div>
+    <div id="loading">
+      <div class="background"></div>
+      <div class="modal">
+        Loading...
+      </div>
+    </div>
+    <div id="filter">
+      <div data-name="Subject" class="fixed">
+        <select id="subject">
+        </select>
+      </div>
+      <div data-name="Derivative" class="fixed">
+        <select id="derivative">
+        </select>
+      </div>
+    </div>
+    <div id="images"></div>
+    <script defer src="bundle.js"></script>
+  </body>
+</html>
