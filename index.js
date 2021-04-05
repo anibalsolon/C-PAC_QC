@@ -44,7 +44,7 @@ async function* listAllObjectsFromS3Bucket(s3, bucket, prefix, delimeter) {
 }
 
 async function loadSubject(s3, subject) {
-  const objs = listAllObjectsFromS3Bucket(s3, options.bucket, subject + '/qc/')
+  const objs = listAllObjectsFromS3Bucket(s3, options.bucket, options.prefix + subject + '/qc/')
   const images = {}
   for await (const obj of objs) {
     let [, , derivative, ...rest] = obj.Key.split('/')
