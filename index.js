@@ -44,9 +44,15 @@ async function* listAllObjectsFromS3Bucket(s3, bucket, prefix, delimeter) {
 }
 
 async function loadSubject(s3, subject) {
-  const objs = listAllObjectsFromS3Bucket(s3, options.bucket, options.prefix + subject + '/qc/')
+  const objs = listAllObjectsFromS3Bucket(s3, options.bucket, subject + '/qc/')
   const images = {}
+
   for await (const obj of objs) {
+
+    if (!obj.Key.endsWith('.png')) {
+      continue
+    }
+
     let [, , derivative, ...rest] = obj.Key.split('/')
     rest = rest.slice(0, -1)
 
@@ -84,12 +90,18 @@ function loadImages(s3, derivative) {
     if (options.authentication) {
       var params = {Bucket: options.bucket, Key: img}
       var url = s3.getSignedUrl('getObject', params)
-      $('#images').append($('<img />').attr('src', url).on('load', function(){ $('#loading').hide() }))
+      $('#images').append(
+        $('<img />')
+          .attr('src', url)
+          .on('load', function(){ $('#loading').hide() })
+          .on('error', function(){ $('#loading').hide(); $('#images img').remove() })
+      )
     } else {
       $('#images').append(
         $('<img />')
           .attr('src', 'https://' + options.bucket + '.s3.amazonaws.com/' + img)
           .on('load', function(){ $('#loading').hide() })
+          .on('error', function(){ $('#loading').hide(); $('#images img').remove() })
       )
     }
   })
