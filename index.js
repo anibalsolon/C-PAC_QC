@@ -97,6 +97,7 @@ function loadImages(s3, derivative) {
           .on('error', function(){ $('#loading').hide(); $('#images img').remove() })
       )
     } else {
+      img = img.split('/').map(encodeURIComponent).join('/')
       $('#images').append(
         $('<img />')
           .attr('src', 'https://' + options.bucket + '.s3.amazonaws.com/' + img)
