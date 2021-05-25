@@ -79,7 +79,7 @@ async function* listAllObjectsFromS3Bucket(s3, bucket, prefix, delimeter) {
         yield* response.Contents
       }
 
-      isTruncated = !response.IsTruncated
+      isTruncated = response.IsTruncated
       if (isTruncated) {
         marker = response.Contents.slice(-1)[0].Key
       }
