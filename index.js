@@ -3,6 +3,11 @@ window.$ = window.jQuery = $
 
 import S3 from 'aws-sdk/clients/s3'
 
+// Config format
+// s3://fcp-indi/data/Projects/RocklandSample/Outputs/C-PAC/[subject]/output/pipeline_analysis_nuisance/{subject}_ses-BAS1/qc/alff_to_standard_a/_scan_BREATHHOLD_acq-1400/_selector_CSF-2mmE-M_aC-WM-2mm-DPC5_G-M_M-SDB_P-2/_hp_0.01/_lp_0.1/_montage_a0/alff_to_standard_a.png
+//      |______| |_________________________________________|          |______________________________________________________|
+//       bucket   prefix                                               qc_dir                                                 
+
 const options = {
   bucket: 'fcp-indi',
   prefix: 'data/Projects/RocklandSample/Outputs/C-PAC/',
