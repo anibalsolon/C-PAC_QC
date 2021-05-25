@@ -4,9 +4,55 @@ window.$ = window.jQuery = $
 import S3 from 'aws-sdk/clients/s3'
 
 const options = {
-  bucket: 'ulg-qc',
-  prefix: '/',
+  bucket: 'fcp-indi',
+  prefix: 'data/Projects/RocklandSample/Outputs/C-PAC/',
+  qc_dir: 'output/pipeline_analysis_nuisance/{subject}_ses-BAS1/qc/',
   authentication: false,
+}
+
+
+if (options.prefix.startsWith('/')) {
+    options.prefix = options.prefix.slice(1)
+}
+
+if (!options.prefix.endsWith('/')) {
+    options.prefix = options.prefix + '/'
+}
+
+if (!options.qc_dir.startsWith('/')) {
+    options.qc_dir = '/' + options.qc_dir
+}
+
+if (!options.qc_dir.endsWith('/')) {
+    options.qc_dir = options.qc_dir + '/'
+}
+
+async function* listDirectoriesFromS3Bucket(s3, bucket, prefix, delimeter) {
+  let isTruncated = true
+  let marker
+
+  while(isTruncated) {
+    let params = { Bucket: bucket }
+    if (prefix) params.Prefix = prefix
+    if (marker) params.Marker = marker
+    if (delimeter) params.Delimiter = delimeter
+    try {
+      const response =
+        options.authentication ?
+          await s3.listObjects(params).promise() :
+          await s3.makeUnauthenticatedRequest('listObjects', params).promise()
+
+      if (response.CommonPrefixes) {
+        yield* response.CommonPrefixes
+      }
+      isTruncated = response.IsTruncated
+      if (isTruncated) {
+        marker = response.NextMarker
+      }
+    } catch(error) {
+      throw error
+    }
+  }
 }
 
 async function* listAllObjectsFromS3Bucket(s3, bucket, prefix, delimeter) {
@@ -24,16 +70,11 @@ async function* listAllObjectsFromS3Bucket(s3, bucket, prefix, delimeter) {
           await s3.listObjects(params).promise() :
           await s3.makeUnauthenticatedRequest('listObjects', params).promise()
 
-      if (delimeter) {
-        if (response.CommonPrefixes) {
-          yield* response.CommonPrefixes
-        }
-      } else {
-        if (response.Contents) {
-          yield* response.Contents
-        }
+      if (response.Contents) {
+        yield* response.Contents
       }
-      isTruncated = response.IsTruncated
+
+      isTruncated = !response.IsTruncated
       if (isTruncated) {
         marker = response.Contents.slice(-1)[0].Key
       }
@@ -44,7 +85,8 @@ async function* listAllObjectsFromS3Bucket(s3, bucket, prefix, delimeter) {
 }
 
 async function loadSubject(s3, subject) {
-  const objs = listAllObjectsFromS3Bucket(s3, options.bucket, subject + '/qc/')
+  const prefix = options.prefix + subject + options.qc_dir.replace('{subject}', subject)
+  const objs = listAllObjectsFromS3Bucket(s3, options.bucket, prefix)
   const images = {}
 
   for await (const obj of objs) {
@@ -53,7 +95,7 @@ async function loadSubject(s3, subject) {
       continue
     }
 
-    let [, , derivative, ...rest] = obj.Key.split('/')
+    let [derivative, ...rest] = obj.Key.slice(prefix.length).split('/')
     rest = rest.slice(0, -1)
 
     if (!images[derivative]) {
@@ -125,11 +167,11 @@ async function init() {
   })
 
   $('#loading').show()
-  const subjects = listAllObjectsFromS3Bucket(s3, options.bucket, false, options.prefix)
+  const subjects = listDirectoriesFromS3Bucket(s3, options.bucket, options.prefix, '/')
 
   $('#filter select#subject option').remove()
   for await (const prefix of subjects) {
-    const subject = prefix.Prefix.slice(0, -1)
+    const subject = prefix.Prefix.split('/').slice(-2, -1)
     $('#filter select#subject').append($('<option />').attr('value', subject).html(subject))
   }
 
